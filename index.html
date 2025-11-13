@@ -269,19 +269,16 @@
             
             try {
                 // Send to n8n webhook with demo client ID
-                const response = await fetch(N8N_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        client_id: DEMO_CLIENT_ID,
-                        question: question
-                    })
-                });
-                
-                if (!response.ok) throw new Error('Network error');
-                
-                const result = await response.json();
-                const answer = result.output || result.answer || 'No response received';
+               const response = await fetch(N8N_WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        client_id: DEMO_CLIENT_ID,
+        question: question
+    })
+});
+
+const answer = await response.text(); // ← CHANGE TO .text()
                 
                 // Add slight delay for natural feel
                 setTimeout(() => {
