@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Policy AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 18px;
+            max-width: 85%;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.user {
+            background: #3498db;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message.assistant {
+            background: white;
+            color: #2c3e50;
+            margin-right: auto;
+            border: 1px solid #e1e8ed;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .message-system {
+            background: #f39c12;
+            color: white;
+            text-align: center;
+            max-width: 100%;
+            border-radius: 10px;
+        }
+        
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e1e8ed;
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .chat-input input:focus {
+            border-color: #3498db;
+        }
+        
+        .chat-input button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+            min-width: 100px;
+        }
+        
+        .chat-input button:hover {
+            background: #2980b9;
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 15px 20px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .demo-questions {
+            background: #ecf0f1;
+            padding: 15px 25px;
+            border-top: 1px solid #bdc3c7;
+        }
+        
+        .demo-questions h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .question-chip {
+            display: inline-block;
+            background: white;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid #bdc3c7;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .question-chip:hover {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .coverage-highlight {
+            background: #ffeaa7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Policy AI Assistant</h1>
+            <div class="subtitle">Ask questions about insurance coverage • Powered by AI</div>
+        </header>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <div class="message message-system">
+                    👋 Hello! I can answer questions about insurance policies. Try asking about coverage limits, deductibles, or specific clauses.
+                </div>
+                <div class="message assistant">
+                    I'm pre-loaded with sample policy documents. You can ask me things like:<br><br>
+                    • <strong>"For how much am I covered for crime?"</strong><br>
+                    • <strong>"What's the overall policy limit?"</strong><br>
+                    • <strong>"Is professional indemnity included?"</strong><br>
+                    • <strong>"Tell me about the deductibles"</strong>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typing-indicator">
+                AI is thinking...
+            </div>
+
+            <div class="demo-questions">
+                <h3>Try these questions:</h3>
+                <div class="question-chip" onclick="askQuestion('For how much am I covered for crime?')">Crime Coverage</div>
+                <div class="question-chip" onclick="askQuestion('What is the overall policy limit?')">Policy Limit</div>
+                <div class="question-chip" onclick="askQuestion('Is professional indemnity included?')">Professional Indemnity</div>
+                <div class="question-chip" onclick="askQuestion('What are the deductibles?')">Deductibles</div>
+                <div class="question-chip" onclick="askQuestion('Tell me about association liability coverage')">Association Liability</div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input">
+                    <input type="text" id="question-input" placeholder="Ask about insurance coverage..." autofocus>
+                    <button onclick="sendQuestion()" id="send-btn">Ask</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const N8N_WEBHOOK_URL = 'https://n8n.srv1104330.hstgr.cloud/webhook-test/617bd99a-3ee9-4951-8b2a-0d77a859a070';
+
+        // Demo mode - always use a sample client ID that has pre-loaded policies
+        const DEMO_CLIENT_ID = 'demo-gliding-client';
+
+        // Initialize chat
+        document.addEventListener('DOMContentLoaded', function() {
+            const questionInput = document.getElementById('question-input');
+            questionInput.focus();
+            
+            // Enter key to send
+            questionInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendQuestion();
+                }
+            });
+        });
+
+        // Ask question from chip
+        function askQuestion(question) {
+            document.getElementById('question-input').value = question;
+            sendQuestion();
+        }
+
+        // Send question to n8n
+        async function sendQuestion() {
+            const questionInput = document.getElementById('question-input');
+            const question = questionInput.value.trim();
+            
+            if (!question) return;
+            
+            // Add user message to chat
+            addChatMessage(question, 'user');
+            questionInput.value = '';
+            updateUIState();
+            
+            // Show typing indicator
+            showTyping(true);
+            
+            try {
+                // Send to n8n webhook with demo client ID
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        client_id: DEMO_CLIENT_ID,
+                        question: question
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Network error');
+                
+                const result = await response.json();
+                const answer = result.output || result.answer || 'No response received';
+                
+                // Add slight delay for natural feel
+                setTimeout(() => {
+                    showTyping(false);
+                    addChatMessage(formatAnswer(answer), 'assistant');
+                }, 1000);
+                
+            } catch (error) {
+                showTyping(false);
+                addChatMessage(`Sorry, I encountered an error: ${error.message}`, 'assistant');
+            }
+            
+            updateUIState();
+        }
+
+        // Format the answer with highlights
+        function formatAnswer(answer) {
+            // Highlight dollar amounts and important terms
+            return answer
+                .replace(/\$[\d,]+/g, '<span class="coverage-highlight">$&</span>')
+                .replace(/(\b\d+\.\d+\([a-z]\)\b)/gi, '<span class="coverage-highlight">$&</span>')
+                .replace(/(Coverage Details|Direct Answer|Explanation|Important Notes)/g, '<strong>$1</strong>');
+        }
+
+        // Add message to chat
+        function addChatMessage(message, sender) {
+            const chat = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            if (sender === 'assistant') {
+                messageDiv.innerHTML = message;
+            } else {
+                messageDiv.textContent = message;
+            }
+            
+            chat.appendChild(messageDiv);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // Show/hide typing indicator
+        function showTyping(show) {
+            const indicator = document.getElementById('typing-indicator');
+            indicator.style.display = show ? 'block' : 'none';
+            if (show) {
+                document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+            }
+        }
+
+        // Update UI state
+        function updateUIState() {
+            const questionInput = document.getElementById('question-input');
+            const sendBtn = document.getElementById('send-btn');
+            
+            // Always enabled in demo mode
+            questionInput.disabled = false;
+            sendBtn.disabled = false;
+        }
+    </script>
+</body>
+</html>
