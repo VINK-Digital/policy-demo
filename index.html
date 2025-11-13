@@ -294,13 +294,23 @@ const answer = await response.text(); // ← CHANGE TO .text()
             updateUIState();
         }
 
-        // Format the answer with highlights
-        function formatAnswer(answer) {
-            // Highlight dollar amounts and important terms
-            return answer
-                .replace(/\$[\d,]+/g, '<span class="coverage-highlight">$&</span>')
-                .replace(/(\b\d+\.\d+\([a-z]\)\b)/gi, '<span class="coverage-highlight">$&</span>')
-                .replace(/(Coverage Details|Direct Answer|Explanation|Important Notes)/g, '<strong>$1</strong>');
+     // Format the answer with highlights
+function formatAnswer(answer) {
+    // First escape HTML characters
+    let safeAnswer = answer
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    
+    // Then apply highlights
+    return safeAnswer
+        .replace(/\$[\d,]+/g, '<span class="coverage-highlight">$&</span>')
+        .replace(/(\b\d+\.\d+\([a-z]\)\b)/gi, '<span class="coverage-highlight">$&</span>')
+        .replace(/(Coverage Details|Direct Answer|Explanation|Important Notes)/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>'); // Convert newlines to line breaks
+}
         }
 
         // Add message to chat
