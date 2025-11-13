@@ -294,7 +294,7 @@ const answer = await response.text(); // ← CHANGE TO .text()
             updateUIState();
         }
 
-     // Format the answer with highlights
+  // Format the answer with highlights
 function formatAnswer(answer) {
     // First escape HTML characters
     let safeAnswer = answer
@@ -311,7 +311,6 @@ function formatAnswer(answer) {
         .replace(/(Coverage Details|Direct Answer|Explanation|Important Notes)/g, '<strong>$1</strong>')
         .replace(/\n/g, '<br>'); // Convert newlines to line breaks
 }
-        }
 
         // Add message to chat
         function addChatMessage(message, sender) {
